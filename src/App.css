@@ -1,18 +1,11 @@
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
-
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafb);
-}
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+  color: #f0f0f0;
+  background-color: #1e1e1e;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -21,46 +14,93 @@
   -webkit-text-size-adjust: 100%;
 }
 
-.container {
+body {
   margin: 0;
-  padding-top: 10vh;
+}
+
+.app {
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 1rem;
+}
+
+.app-error {
   justify-content: center;
+  align-items: center;
   text-align: center;
+  color: #f5a3a3;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
+.message-list {
+  flex: 1;
+  overflow-y: auto;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+.message {
+  max-width: 80%;
+  padding: 0.6em 0.9em;
+  border-radius: 10px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
-a:hover {
-  color: #535bf2;
+.message-user {
+  align-self: flex-end;
+  background-color: #2f5db0;
+  color: #ffffff;
 }
 
-h1 {
-  text-align: center;
+.message-izzie {
+  align-self: flex-start;
+  background-color: #2f2f2f;
+  color: #f0f0f0;
 }
 
-input,
+.message-error {
+  margin-top: 0.4em;
+  color: #f5a3a3;
+  font-size: 0.9em;
+}
+
+.message-status {
+  margin-top: 0.4em;
+  color: #a0a0a0;
+  font-size: 0.85em;
+  font-style: italic;
+}
+
+.composer {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  padding-top: 0.5rem;
+}
+
+textarea {
+  flex: 1;
+  resize: none;
+  min-height: 2.5em;
+  max-height: 8em;
+  border-radius: 8px;
+  border: 1px solid #444;
+  padding: 0.6em 0.9em;
+  font-size: 1em;
+  font-family: inherit;
+  color: #f0f0f0;
+  background-color: #2a2a2a;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #396cd8;
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -68,49 +108,17 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-}
-
-button {
+  color: #ffffff;
+  background-color: #396cd8;
   cursor: pointer;
+  transition: border-color 0.25s;
 }
 
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
+button:hover:not(:disabled) {
+  border-color: #6a94e8;
 }
 
-input,
-button {
-  outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
-
-  a:hover {
-    color: #24c8db;
-  }
-
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
-  }
-  button:active {
-    background-color: #0f0f0f69;
-  }
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }

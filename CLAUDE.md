@@ -71,5 +71,11 @@ hozzá. `git add .` és `git add -A` nem használható.
 
 * Kész: Tauri + React + TS váz, `Izzie` ablakcímmel,
 `com.kovacslajosimre.izzie` identifierrel.
-* Következik: 1. szelet, chatablak (lásd a spec „1. szelet” részét).
+* Kész: 1. szelet, chatablak. Stream-bontó modul (`src/sse.ts`,
+Vitesttel tesztelve), hálózati réteg (`src/chatClient.ts`), a chat UI
+(`src/App.tsx`). A sablon `greet` parancsa (Rust és UI oldalon is)
+törölve. A füstpróbát (`npm run tauri dev` melletti manuális teszt) még
+el kell végezni.
+* Következik: a következő szelet (pl. token a Windows jelszótárában,
+előzmény betöltése).
 
