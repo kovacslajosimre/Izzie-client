@@ -10,7 +10,7 @@ A tervezési döntések nem ebben a repóban vannak, hanem a backend repóban,
 ami egy Obsidian vaultban él ezen a gépen:
 
 ```
-C:\\Users\\LamaLT\\Documents\\Obsidian\\Personal\\Project Izzie\\Izzie\\docs\\client.md
+C:\Users\LamaLT\Documents\Obsidian\Personal\Project Izzie\Izzie\docs\client.md
 ```
 
 * **Minden feladat előtt olvasd el** a vonatkozó részt.
