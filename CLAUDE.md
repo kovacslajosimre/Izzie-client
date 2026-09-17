@@ -74,8 +74,15 @@ hozzá. `git add .` és `git add -A` nem használható.
 * Kész: 1. szelet, chatablak. Stream-bontó modul (`src/sse.ts`,
 Vitesttel tesztelve), hálózati réteg (`src/chatClient.ts`), a chat UI
 (`src/App.tsx`). A sablon `greet` parancsa (Rust és UI oldalon is)
-törölve. A füstpróbát (`npm run tauri dev` melletti manuális teszt) még
-el kell végezni.
-* Következik: a következő szelet (pl. token a Windows jelszótárában,
-előzmény betöltése).
+törölve. A füstpróba (2026-09-16) rendben lefutott.
+* Kész: 2. szelet (szerver és kliens rész is). Szerveroldali
+időkorlátok a Gemini-hívásokon (másik repó). Kliensoldalon a
+`chatClient.ts`-ben egy belső időzítő (`IDLE_TIMEOUT_MS`, `AbortSignal.any`
+a felhasználói leállítással), ami megkülönbözteti az `aborted` és a
+`timeout` végkimenetelt; az `App.tsx`-ben egy meglévő állapotból
+levezetett, animált „Izzie gondolkodik…” jelzés az első token
+megérkezéséig. A füstpróba (a spec „2. szelet” „Füstpróba” szakasza,
+3 lépés) még hátravan a felhasználóval.
+* Következik: a füstpróba elvégzése, utána a következő szelet (pl.
+token a Windows jelszótárában, előzmény betöltése).
 

@@ -3,7 +3,13 @@ import "./App.css";
 import { ChatRequestError, sendChatMessage } from "./chatClient";
 import { SSEParseError, type SSEEvent } from "./sse";
 
-type MessageStatus = "streaming" | "done" | "error" | "aborted" | "interrupted";
+type MessageStatus =
+  | "streaming"
+  | "done"
+  | "error"
+  | "aborted"
+  | "interrupted"
+  | "timeout";
 
 interface ChatMessage {
   id: string;
@@ -105,7 +111,9 @@ function App() {
             ? "error"
             : result.ending === "aborted"
               ? "aborted"
-              : "interrupted";
+              : result.ending === "timeout"
+                ? "timeout"
+                : "interrupted";
       updateMessage(izzieId, (m) => ({ ...m, status }));
     } catch (err) {
       updateMessage(izzieId, (m) => ({
@@ -144,14 +152,34 @@ function App() {
   return (
     <main className="app">
       <div className="message-list" ref={listRef}>
-        {messages.map((m) => (
-          <div key={m.id} className={`message message-${m.role}`}>
-            <div className="message-text">{m.text}</div>
-            {m.errorMessage && <div className="message-error">{m.errorMessage}</div>}
-            {m.status === "interrupted" && <div className="message-status">Megszakadt</div>}
-            {m.status === "aborted" && <div className="message-status">Leállítva</div>}
-          </div>
-        ))}
+        {messages.map((m) => {
+          const isThinking =
+            m.role === "izzie" && m.status === "streaming" && m.text === "" && !m.errorMessage;
+          return (
+            <div key={m.id} className={`message message-${m.role}`}>
+              <div className="message-text">
+                {isThinking ? (
+                  <span className="thinking">
+                    Izzie gondolkodik
+                    <span className="thinking-dots">
+                      <span>.</span>
+                      <span>.</span>
+                      <span>.</span>
+                    </span>
+                  </span>
+                ) : (
+                  m.text
+                )}
+              </div>
+              {m.errorMessage && <div className="message-error">{m.errorMessage}</div>}
+              {m.status === "interrupted" && <div className="message-status">Megszakadt</div>}
+              {m.status === "aborted" && <div className="message-status">Leállítva</div>}
+              {m.status === "timeout" && (
+                <div className="message-status">Izzie nem válaszolt időben.</div>
+              )}
+            </div>
+          );
+        })}
       </div>
       <form
         className="composer"
