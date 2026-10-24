@@ -1,16 +1,16 @@
 # Izzie kliens
 
 Az Izzie személyes asszisztens asztali kliense: Tauri 2 + React + TypeScript,
-Windowson. A backend (Python, FastAPI) egy másik repóban él
+Ubuntun. A backend (Python, FastAPI) egy másik repóban él
 (`kovacslajosimre/Izzie`), egy otthoni szerveren, és Tailscale-en érhető el.
 
 ## A spec
 
 A tervezési döntések nem ebben a repóban vannak, hanem a backend repóban,
-ami egy Obsidian vaultban él ezen a gépen:
+ami ezen a gépen e repó mellett él:
 
 ```
-C:\Users\LamaLT\Documents\Obsidian\Personal\Project Izzie\Izzie\docs\client.md
+../Izzie/docs/client.md
 ```
 
 * **Minden feladat előtt olvasd el** a vonatkozó részt.
@@ -47,9 +47,9 @@ ne írd ki a tartalmát, és ne tedd a kódba.
 
 ## Parancsok
 
-A környezet Windows, PowerShell.
+A környezet Ubuntu, bash.
 
-```powershell
+```bash
 npm install          # függőségek
 npm test             # tesztek (Vitest)
 npm run tauri dev    # fejlesztői indítás
@@ -81,8 +81,8 @@ időkorlátok a Gemini-hívásokon (másik repó). Kliensoldalon a
 a felhasználói leállítással), ami megkülönbözteti az `aborted` és a
 `timeout` végkimenetelt; az `App.tsx`-ben egy meglévő állapotból
 levezetett, animált „Izzie gondolkodik…” jelzés az első token
-megérkezéséig. A füstpróba (a spec „2. szelet” „Füstpróba” szakasza,
-3 lépés) még hátravan a felhasználóval.
-* Következik: a füstpróba elvégzése, utána a következő szelet (pl.
-token a Windows jelszótárában, előzmény betöltése).
+megérkezéséig. A füstpróba (2026-09-17) rendben lefutott.
+* 2026 októberében a fejlesztés Windowsról Ubuntura költözött.
+* Következik: a következő szelet (pl. előzmény betöltése a szerverről,
+token az operációs rendszer jelszótárában).
 
