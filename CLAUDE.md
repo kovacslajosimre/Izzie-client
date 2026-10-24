@@ -83,7 +83,7 @@ a felhasználói leállítással), ami megkülönbözteti az `aborted` és a
 levezetett, animált „Izzie gondolkodik…” jelzés az első token
 megérkezéséig. A füstpróba (2026-09-17) rendben lefutott.
 * 2026 októberében a fejlesztés Windowsról Ubuntura költözött.
-* Kész (kód, a füstpróba még hátra van): 3. szelet kliens része,
+* Kész: 3. szelet kliens része,
 előzmény betöltése indításkor. A szerver `GET /history`-ja a másik
 repóban kész. Tiszta átalakító modul (`src/history.ts`, Vitesttel
 tesztelve): alakellenőrzés, session-elválasztók, `srv-<id>`/`sep-<id>`
@@ -92,7 +92,8 @@ mikroszekundumos időbélyeget ezredmásodpercre vágja). `fetchHistory()` a
 `chatClient.ts`-ben, 15 s-os teljes időkorláttal és új `timeout`
 hibafajtával. Az `App.tsx`-ben külön előzmény-állapot (betöltés, siker,
 hiba); betöltés közben a küldés tiltva, hibánál működik. A StrictMode
-dupla effektjét `AbortController` és felülíró `setHistory` kezeli.
-* Következik: a 3. szelet füstpróbája (spec, „Füstpróba” pontok), utána
-a következő szelet (pl. token az operációs rendszer jelszótárában).
+dupla effektjét `AbortController` és felülíró `setHistory` kezeli. A
+füstpróba (2026-10-24) rendben lefutott.
+* Következik: a következő szelet (pl. token az operációs rendszer
+jelszótárában).
 
