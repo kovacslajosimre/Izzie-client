@@ -1,6 +1,8 @@
-// Network layer for the /chat endpoint. Not unit tested (per spec, only
-// the sse.ts parser has automated tests); covered by the manual smoke test.
+// Network layer for the server (/chat, /history). Not unit tested (per
+// spec, only the pure modules have automated tests); covered by the manual
+// smoke test.
 
+import { parseHistoryResponse, type HistoryMessage } from "./history";
 import { SSEDecoder, SSEParseError, type SSEEvent } from "./sse";
 
 export type ChatEnding = "done" | "error" | "aborted" | "cut" | "timeout";
@@ -11,16 +13,28 @@ export type ChatEnding = "done" | "error" | "aborted" | "cut" | "timeout";
 // elobb, es az a pontosabb uzenet.
 export const IDLE_TIMEOUT_MS = 45000;
 
+// A teljes /history keresre (fejlecek es torzs egyutt): kis, egyszeri
+// valasz, semmi ne varjon ra orokke.
+export const HISTORY_TIMEOUT_MS = 15000;
+
 export interface SendChatMessageResult {
   ending: ChatEnding;
 }
 
+export type RequestErrorKind =
+  | "unauthorized"
+  | "http"
+  | "network"
+  | "invalid-response"
+  | "timeout";
+
+// Used for both /chat and /history; the message is the user-facing text.
 export class ChatRequestError extends Error {
-  kind: "unauthorized" | "http" | "network" | "invalid-response";
+  kind: RequestErrorKind;
   status?: number;
 
   constructor(
-    kind: "unauthorized" | "http" | "network" | "invalid-response",
+    kind: RequestErrorKind,
     message: string,
     status?: number,
   ) {
@@ -141,6 +155,73 @@ export async function sendChatMessage(
       // Connection dropped mid-stream: whatever text arrived stays, marked
       // as cut off rather than shown as an error message.
       return { ending: "cut" };
+    }
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+// Throws ChatRequestError on failure. On an external abort (opts.signal)
+// the AbortError is rethrown; the caller is expected to ignore it.
+export async function fetchHistory(opts: { signal: AbortSignal }): Promise<HistoryMessage[]> {
+  const url = import.meta.env.VITE_IZZIE_URL;
+  const token = import.meta.env.VITE_IZZIE_TOKEN;
+
+  const timeoutController = new AbortController();
+  const combinedSignal = AbortSignal.any([opts.signal, timeoutController.signal]);
+  const timeoutId = setTimeout(() => timeoutController.abort(), HISTORY_TIMEOUT_MS);
+
+  const timeoutError = () =>
+    new ChatRequestError("timeout", "A szerver nem válaszolt időben.");
+
+  try {
+    let response: Response;
+    try {
+      response = await fetch(`${url}/history`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: combinedSignal,
+      });
+    } catch (err) {
+      if (timeoutController.signal.aborted) {
+        throw timeoutError();
+      }
+      if (isAbortError(err)) {
+        throw err;
+      }
+      throw new ChatRequestError(
+        "network",
+        "A szerver nem érhető el. Ellenőrizd a Tailscale/VPN kapcsolatot.",
+      );
+    }
+
+    if (response.status === 401) {
+      throw new ChatRequestError("unauthorized", "Érvénytelen token.");
+    }
+    if (!response.ok) {
+      throw new ChatRequestError(
+        "http",
+        `A szerver hibával válaszolt (${response.status}).`,
+        response.status,
+      );
+    }
+
+    let json: unknown;
+    try {
+      json = await response.json();
+    } catch (err) {
+      if (timeoutController.signal.aborted) {
+        throw timeoutError();
+      }
+      if (isAbortError(err)) {
+        throw err;
+      }
+      throw new ChatRequestError("invalid-response", "A szerver érvénytelen választ küldött.");
+    }
+
+    try {
+      return parseHistoryResponse(json);
+    } catch {
+      throw new ChatRequestError("invalid-response", "A szerver érvénytelen választ küldött.");
     }
   } finally {
     clearTimeout(timeoutId);

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import "./App.css";
-import { ChatRequestError, sendChatMessage } from "./chatClient";
+import { ChatRequestError, fetchHistory, sendChatMessage } from "./chatClient";
+import { formatSessionStart, toHistoryItems, type HistoryItem } from "./history";
 import { SSEParseError, type SSEEvent } from "./sse";
 
 type MessageStatus =
@@ -19,6 +20,11 @@ interface ChatMessage {
   errorMessage?: string;
 }
 
+type HistoryState =
+  | { status: "loading" }
+  | { status: "loaded"; items: HistoryItem[] }
+  | { status: "error"; message: string };
+
 function getMissingEnvVars(): string[] {
   const missing: string[] = [];
   if (!import.meta.env.VITE_IZZIE_URL) missing.push("VITE_IZZIE_URL");
@@ -28,16 +34,8 @@ function getMissingEnvVars(): string[] {
 
 function describeRequestError(err: unknown): string {
   if (err instanceof ChatRequestError) {
-    switch (err.kind) {
-      case "unauthorized":
-        return "Érvénytelen token.";
-      case "http":
-        return `A szerver hibával válaszolt (${err.status ?? "?"}).`;
-      case "network":
-        return "A szerver nem érhető el. Ellenőrizd a Tailscale/VPN kapcsolatot.";
-      case "invalid-response":
-        return "A szerver nem küldött választörzset.";
-    }
+    // The user-facing text is set where the error is raised.
+    return err.message;
   }
   if (err instanceof SSEParseError) {
     return "Hiba történt a válasz feldolgozása közben.";
@@ -50,6 +48,7 @@ function App() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [history, setHistory] = useState<HistoryState>({ status: "loading" });
   const abortControllerRef = useRef<AbortController | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
@@ -58,7 +57,28 @@ function App() {
     if (el) {
       el.scrollTop = el.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, history]);
+
+  // StrictMode runs this twice in development: the first run's cleanup
+  // aborts its request and its result is dropped. setHistory replaces
+  // rather than appends, so the history can never be added twice.
+  useEffect(() => {
+    if (missingEnvVars.length > 0) {
+      return;
+    }
+    const controller = new AbortController();
+    fetchHistory({ signal: controller.signal })
+      .then((msgs) => {
+        if (controller.signal.aborted) return;
+        setHistory({ status: "loaded", items: toHistoryItems(msgs) });
+      })
+      .catch((err: unknown) => {
+        if (controller.signal.aborted) return;
+        setHistory({ status: "error", message: describeRequestError(err) });
+      });
+    return () => controller.abort();
+    // Empty deps on purpose: load once on startup.
+  }, []);
 
   function updateMessage(id: string, updater: (msg: ChatMessage) => ChatMessage) {
     setMessages((prev) => prev.map((m) => (m.id === id ? updater(m) : m)));
@@ -66,7 +86,9 @@ function App() {
 
   async function handleSend() {
     const text = input.trim();
-    if (!text || isGenerating) {
+    // While the history loads, sending is blocked: a new message would
+    // end up above the history and mix up the order.
+    if (!text || isGenerating || history.status === "loading") {
       return;
     }
 
@@ -152,6 +174,27 @@ function App() {
   return (
     <main className="app">
       <div className="message-list" ref={listRef}>
+        {history.status === "loading" && (
+          <div className="history-note">Előzmény betöltése…</div>
+        )}
+        {history.status === "error" && (
+          <div className="history-note history-error">
+            Az előzményt nem sikerült betölteni. {history.message}
+          </div>
+        )}
+        {history.status === "loaded" &&
+          history.items.map((item) =>
+            item.kind === "separator" ? (
+              <div key={item.id} className="history-separator">
+                {formatSessionStart(item.startedAt)}
+              </div>
+            ) : (
+              <div key={item.id} className={`message message-${item.role}`}>
+                <div className="message-text">{item.text}</div>
+                {item.partial && <div className="message-status">Félbemaradt</div>}
+              </div>
+            ),
+          )}
         {messages.map((m) => {
           const isThinking =
             m.role === "izzie" && m.status === "streaming" && m.text === "" && !m.errorMessage;
@@ -200,7 +243,7 @@ function App() {
             Leállítás
           </button>
         ) : (
-          <button type="submit" disabled={!input.trim()}>
+          <button type="submit" disabled={!input.trim() || history.status === "loading"}>
             Küldés
           </button>
         )}

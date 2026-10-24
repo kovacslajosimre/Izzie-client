@@ -75,6 +75,24 @@ body {
   font-style: italic;
 }
 
+.history-note {
+  align-self: center;
+  color: #a0a0a0;
+  font-size: 0.9em;
+  font-style: italic;
+}
+
+.history-error {
+  color: #c99a9a;
+}
+
+.history-separator {
+  align-self: center;
+  color: #8a8a8a;
+  font-size: 0.8em;
+  margin-top: 0.5rem;
+}
+
 .thinking {
   color: #a0a0a0;
   font-style: italic;
